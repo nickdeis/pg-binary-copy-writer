@@ -1,5 +1,6 @@
 {
   "name": "pg-binary-copy-writer",
+  "version": "0.1.0",
   "module": "index.ts",
   "devDependencies": {
     "@types/bun": "latest",
@@ -8,12 +9,13 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "rm -rf ./dist/* && tsc",
+    "bun-bundle": "bun build ./src/index.ts > ./dist/index.js",
+    "build": "rm -rf ./dist/* && tsc && bun run bun-bundle",
     "test-build": "bun run build && qjs qjs-test.js"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
-  "private": true,
+  "private": false,
   "type": "module"
 }

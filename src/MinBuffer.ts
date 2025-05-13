@@ -1,4 +1,4 @@
-import { utf8ToBytes, utf8Write } from "utf8";
+import { utf8ToBytes, utf8Write } from "./utf8";
 
 export class MinBuffer extends Uint8Array {
   constructor(length: number | Uint8Array | ArrayBuffer) {

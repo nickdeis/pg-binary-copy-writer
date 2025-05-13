@@ -3,7 +3,7 @@ import { MinBuffer } from "./MinBuffer";
 import { encode, type PGType } from "./encoders";
 
 //Header
-function encodeHeader() {
+export function getPGBinaryHeader() {
   const buf = new BufferPut();
   buf.put(
     MinBuffer.fromArray([
@@ -12,13 +12,11 @@ function encodeHeader() {
   );
   buf.word32be(0);
   buf.word32be(0);
-  return buf;
+  return new Uint8Array(buf.buffer());
 }
 
-function encodeFooter() {
-  const buf = new BufferPut();
-  buf.put(MinBuffer.fromArray([0xff, 0xff]));
-  return buf;
+export function getPGBinaryFooter() {
+  return new Uint8Array(MinBuffer.fromArray([0xff, 0xff]));
 }
 
 export class TypedRecordEncoder<T> {
@@ -28,13 +26,7 @@ export class TypedRecordEncoder<T> {
     this.schema = schema;
     this.fields = Object.keys(this.schema) as (keyof T)[];
   }
-  static getPGBinaryHeader() {
-    return new Uint8Array(encodeHeader().buffer());
-  }
-  static getPGBinaryFooter() {
-    return new Uint8Array(encodeFooter().buffer());
-  }
-  encodeRecord(record: T) {
+  encodeRecord(record: T): Uint8Array {
     const buf = new BufferPut();
     const { fields, schema } = this;
     buf.word16be(fields.length);
@@ -50,16 +42,16 @@ export class TypedRecordEncoder<T> {
     }
     return new Uint8Array(buf.buffer());
   }
-  encodeRecords(records: T[]) {
+  encodeRecords(records: T[]): Uint8Array {
     const buf = new BufferPut();
-    const header = encodeHeader();
-    buf.insert(header);
+    const header = getPGBinaryHeader();
+    buf.put(new MinBuffer(header));
     for (const record of records) {
       const rowBuf = this.encodeRecord(record);
       buf.put(new MinBuffer(rowBuf));
     }
-    const footer = encodeFooter();
-    buf.insert(footer);
+    const footer = getPGBinaryFooter();
+    buf.put(new MinBuffer(footer));
     return new Uint8Array(buf.buffer());
   }
 }

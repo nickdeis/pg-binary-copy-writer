@@ -5,6 +5,12 @@ A module that writes javascript types/objects/arrays to the Postgres binary copy
 ## Usage
 
 ```typescript
+import {
+  TypedRecordEncoder,
+  getPGBinaryHeader,
+  getPGBinaryFooter,
+} from "pg-binary-copy-writer";
+
 type InputType = {
   a: string;
   b: string;
@@ -33,11 +39,11 @@ const encoder = new TypedRecordEncoder<InputType>({
 const output = encoder.encodeRecords(inputArray);
 // Or, you can stream it like so
 //Get a header and add it to the start of your stream
-const PG_BINARY_HEADER = TypedRecordEncoder.getPGBinaryHeader();
+const PG_BINARY_HEADER = getPGBinaryHeader();
 //Encode records
-encoder.encodeRecord(input);
+const binary = encoder.encodeRecord(input);
 //Add the footer then close the stream
-const PG_BINARY_FOOTER = TypedRecordEncoder.getPGBinaryHeader();
+const PG_BINARY_FOOTER = getPGBinaryHeader();
 ```
 
 ## Why?
@@ -59,7 +65,7 @@ So what if:
 
 Here's an example from Snowflake:
 
-```
+```sql
 SELECT pgBinaryHeader() as bin
 UNION ALL
 SELECT pgBinaryRow(*) as bin
@@ -73,9 +79,18 @@ FROM table
 Most databases allow you to configure record delimiters and field delimiters.
 Snowflake as an example has:
 
-```
+```sql
  RECORD_DELIMITER = ''
  FIELD_DELIMITER = ''
+```
+
+And Mysql has
+
+```sql
+SELECT * INTO OUTFILE 'outfile.bin'
+    FIELDS TERMINATED BY '' OPTIONALLY ENCLOSED BY ''
+    LINES TERMINATED BY ''
+FROM table
 ```
 
 ## Why not just use CSV?
@@ -86,7 +101,7 @@ Snowflake as an example has:
 ## Restrictions
 
 In order to work in **all** JS environments,
-I'm limited to only using classes/methods (eg I rely a lot on DataView)
+I'm limited to only using classes/methods (eg I rely a lot on DataView).
 
 ## Special Thanks
 

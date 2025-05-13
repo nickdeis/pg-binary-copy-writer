@@ -1,6 +1,6 @@
 import BufferPut, {} from "./BufferPut";
 import { MinBuffer } from "./MinBuffer";
-import { chunk, flatten } from "utils";
+import { flatten } from "./utils";
 const BoolCoder = {
     oid: 16,
     send(buf, value) {
@@ -109,8 +109,8 @@ class BaseArrayCoder {
             ndim++;
             tmp = tmp[0];
         }
-        buf.word32be(ndim); // ndim
-        buf.word32be(0); // hasnull
+        buf.word32be(ndim);
+        buf.word32be(0);
         buf.word32be(types[this.type].oid); // elem oid
         // for each dimension, declare
         // - size of dimension
@@ -141,7 +141,6 @@ const JSONBArrayCoder = new BaseArrayCoder(3807, "jsonb");
 const Float4ArrayCoder = new BaseArrayCoder(1021, "float4");
 const Float8ArrayCoder = new BaseArrayCoder(1022, "float8");
 const TimestamptzArrayCoder = new BaseArrayCoder(1185, "timestamptz");
-// Note that send function names are kept identical to their names in the PostgreSQL source code.
 export const types = {
     bool: BoolCoder,
     bytea: ByteaCoder,

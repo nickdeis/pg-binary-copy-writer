@@ -1,6 +1,5 @@
 import { TypedRecordEncoder } from ".";
 import { PGlite } from "@electric-sql/pglite";
-import { writeFileSync } from "node:fs";
 import { describe, it, expect } from "bun:test";
 const pool = new PGlite();
 
@@ -67,7 +66,7 @@ async function createTable() {
   await pool.query(create_table);
 }
 
-async function writeOutput(x: Uint8Array<ArrayBuffer>) {
+async function writeOutput(x: Uint8Array) {
   const blob = new Blob([x]);
 
   await pool.query(

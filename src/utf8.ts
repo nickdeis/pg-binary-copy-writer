@@ -1,4 +1,4 @@
-import type { MinBuffer } from "MinBuffer";
+import type { MinBuffer } from "src/MinBuffer";
 
 function blitBuffer(
   src: number[],

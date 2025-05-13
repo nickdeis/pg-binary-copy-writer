@@ -1,6 +1,6 @@
 import BufferPut, { type Word } from "./BufferPut";
 import { MinBuffer } from "./MinBuffer";
-import { chunk, flatten } from "utils";
+import { flatten } from "./utils";
 
 interface PGCoder<T> {
   readonly oid: number;
@@ -128,8 +128,8 @@ class BaseArrayCoder<T> implements PGCoder<T[]> {
       ndim++;
       tmp = tmp[0];
     }
-    buf.word32be(ndim); // ndim
-    buf.word32be(0); // hasnull
+    buf.word32be(ndim);
+    buf.word32be(0);
     buf.word32be(types[this.type].oid); // elem oid
     // for each dimension, declare
     // - size of dimension
@@ -162,7 +162,6 @@ const Float4ArrayCoder = new BaseArrayCoder<number>(1021, "float4");
 const Float8ArrayCoder = new BaseArrayCoder<number>(1022, "float8");
 const TimestamptzArrayCoder = new BaseArrayCoder<Date>(1185, "timestamptz");
 
-// Note that send function names are kept identical to their names in the PostgreSQL source code.
 export const types = {
   bool: BoolCoder,
   bytea: ByteaCoder,
