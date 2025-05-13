@@ -1,7 +1,8 @@
 {
   "name": "pg-binary-copy-writer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "module": "index.ts",
+  "license": "MIT",
   "devDependencies": {
     "@types/bun": "latest",
     "@electric-sql/pglite": "^0.3.0"
