@@ -47,30 +47,6 @@ export default class BufferPut {
     this.len += bufferput.len;
     return this;
   }
-  word8(value: number) {
-    this.words.push({ bytes: 1, value });
-    this.len += 1;
-    return this;
-  }
-  floatle(value: number) {
-    this.words.push({ bytes: "float", endian: "little", value });
-    this.len += 4;
-    return this;
-  }
-  varint(i: number) {
-    if (i < 0xfd) {
-      this.word8(i);
-    } else if (i <= 1 << 16) {
-      this.word8(0xfd);
-      this.word16le(i);
-    } else if (i <= 1 << 32) {
-      this.word8(0xfe);
-      this.word32le(i);
-    } else {
-      this.word8(0xff);
-      this.word64le(i);
-    }
-  }
   private wordbits(value: number, bits: number, endian: "little" | "big") {
     this.words.push({ endian, bytes: bits / 8, value });
     this.len += bits / 8;
@@ -105,11 +81,6 @@ export default class BufferPut {
   }
   word64be(x: number) {
     return this.wordbitsbe(x, 64);
-  }
-  pad(bytes: number) {
-    this.words.push({ endian: "big", bytes: bytes, value: 0 });
-    this.len += bytes;
-    return this;
   }
   length() {
     return this.len;
@@ -149,8 +120,5 @@ export default class BufferPut {
       }
     }
     return buf;
-  }
-  write(stream: NodeJS.WriteStream) {
-    stream.write(this.buffer());
   }
 }

@@ -5,7 +5,6 @@ import { chunk, flatten } from "utils";
 interface PGCoder<T> {
   readonly oid: number;
   send(buf: BufferPut, value: T): void;
-  //recv(buf: MinBuffer): T;
 }
 
 const BoolCoder: PGCoder<boolean> = {
@@ -13,9 +12,6 @@ const BoolCoder: PGCoder<boolean> = {
   send(buf: BufferPut, value: boolean): void {
     buf.word8be(value ? 1 : 0);
   },
-  // recv(buf: MinBuffer): boolean {
-  //   return buf.readUInt8(0) ? true : false;
-  // },
 };
 
 const ByteaCoder: PGCoder<MinBuffer> = {
@@ -23,27 +19,18 @@ const ByteaCoder: PGCoder<MinBuffer> = {
   send(buf: BufferPut, value: MinBuffer): void {
     buf.put(value);
   },
-  // recv(buf: MinBuffer): MinBuffer {
-  //   return buf;
-  // },
 };
 const Int2Coder: PGCoder<number> = {
   oid: 21,
   send(buf: BufferPut, value: number): void {
     buf.word16be(value);
   },
-  // recv(buf: MinBuffer): number {
-  //   return buf.readInt16BE(0);
-  // },
 };
 const Int4Coder: PGCoder<number> = {
   oid: 23,
   send(buf: BufferPut, value: number): void {
     buf.word32be(value);
   },
-  // recv(buf: MinBuffer): number {
-  //   return buf.readInt32BE(0);
-  // },
 };
 
 const Int8Coder: PGCoder<bigint> = {
@@ -54,9 +41,6 @@ const Int8Coder: PGCoder<bigint> = {
     view.setBigInt64(0, value, false);
     buf.put(new MinBuffer(buffer));
   },
-  // recv(buf: MinBuffer): bigint {
-  //   return BigInt(buf.readBigInt64BE(0).toString());
-  // },
 };
 
 const TextCoder: PGCoder<string> = {
@@ -65,9 +49,6 @@ const TextCoder: PGCoder<string> = {
     const tbuf = MinBuffer.fromUTF8String(value);
     buf.put(tbuf);
   },
-  // recv(buf: MinBuffer): string {
-  //   return buf.toString();
-  // },
 };
 
 const VarCharCoder: PGCoder<string> = { ...TextCoder, oid: 1043 };
@@ -78,9 +59,6 @@ const JSONCoder: PGCoder<any> = {
     const jbuf = MinBuffer.fromUTF8String(JSON.stringify(value));
     buf.put(jbuf);
   },
-  // recv(buf: MinBuffer): any {
-  //   return JSON.parse(buf.toString());
-  // },
 };
 
 const JSONBCoder: PGCoder<any> = {
@@ -89,9 +67,6 @@ const JSONBCoder: PGCoder<any> = {
     const jbuf = MinBuffer.fromUTF8String("\u0001" + JSON.stringify(value));
     buf.put(jbuf);
   },
-  // recv(buf: MinBuffer): any {
-  //   return JSON.parse(buf.slice(1).toString());
-  // },
 };
 
 const Float4Coder: PGCoder<number> = {
@@ -100,9 +75,6 @@ const Float4Coder: PGCoder<number> = {
     const fbuf = MinBuffer.fromDoubleLE(value, 0);
     buf.put(fbuf);
   },
-  // recv(buf: MinBuffer): number {
-  //   return buf.readDoubleLE(0);
-  // },
 };
 
 const Float8Coder: PGCoder<number> = {
@@ -111,9 +83,6 @@ const Float8Coder: PGCoder<number> = {
     const fbuf = MinBuffer.fromDoubleBE(value, 0);
     buf.put(fbuf);
   },
-  // recv(buf: MinBuffer): number {
-  //   return buf.readDoubleBE(0);
-  // },
 };
 
 const TimestamptzCoder: PGCoder<Date> = {
@@ -127,13 +96,6 @@ const TimestamptzCoder: PGCoder<Date> = {
     view.setBigInt64(0, BigInt(ts), false);
     buf.put(new MinBuffer(buffer));
   },
-  // recv: function (buf: MinBuffer): Date {
-  //   const ts = String(buf.readBigInt64BE(0));
-  //   let x: bigint = BigInt(ts);
-  //   x = x / 1000n;
-  //   x = x + 946684800000n;
-  //   return new Date(Number(x));
-  // },
 };
 
 const UUIDCoder: PGCoder<string> = {
@@ -147,14 +109,6 @@ const UUIDCoder: PGCoder<string> = {
     const uuidBuffer = new MinBuffer(MinBuffer.fromHex(hex));
     buf.put(uuidBuffer);
   },
-  // recv(buf: MinBuffer): string {
-  //   const uuidBuffer = new MinBuffer(buf.slice(0, 16));
-  //   const hex = uuidBuffer.toHex();
-  //   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(
-  //     12,
-  //     16
-  //   )}-${hex.slice(16, 20)}-${hex.slice(20)}`;
-  // },
 };
 
 class BaseArrayCoder<T> implements PGCoder<T[]> {
@@ -193,55 +147,6 @@ class BaseArrayCoder<T> implements PGCoder<T[]> {
       encode(buf, this.type, flat[i]);
     }
   }
-  // recv(buf: MinBuffer): T[] {
-  //   let offset = 0;
-  //   const UInt32Len = 4;
-  //   const ndim = buf.readUInt32BE(offset);
-  //   offset += UInt32Len;
-  //   // eslint-disable-next-line no-unused-vars
-  //   const hasnull = buf.readUInt32BE(offset);
-  //   offset += UInt32Len;
-  //   const typoid = buf.readUInt32BE(offset);
-  //   offset += UInt32Len;
-  //   let type: PGType;
-  //   // eslint-disable-next-line no-unused-vars
-  //   let found = false;
-  //   for (type in types) {
-  //     if (types[type].oid === typoid) {
-  //       // eslint-disable-next-line no-unused-vars
-  //       found = true;
-  //       break;
-  //     }
-  //   }
-  //   // description of dimensions
-  //   const dims = [];
-  //   const lowers = [];
-  //   let len = 1;
-  //   for (let i = 0; i < ndim; i++) {
-  //     const n = buf.readUInt32BE(offset);
-  //     len = len * n;
-  //     dims.push(n);
-  //     offset += UInt32Len;
-  //     lowers.push(buf.readUInt32BE(offset));
-  //     offset += UInt32Len;
-  //   }
-  //   // fetch flattenned data
-  //   let flat = [];
-  //   for (let i = 0; i < len; i++) {
-  //     const fieldLen = buf.readUInt32BE(offset);
-  //     offset += UInt32Len;
-  //     //@ts-ignore
-  //     flat.push(decode(buf.slice(offset, offset + fieldLen), type));
-  //     offset += fieldLen;
-  //   }
-
-  //   let size;
-  //   dims.shift();
-  //   while ((size = dims.pop())) {
-  //     flat = chunk(flat, size);
-  //   }
-  //   return flat;
-  // }
 }
 
 const BoolArrayCoder = new BaseArrayCoder<boolean>(1000, "bool");
@@ -305,7 +210,7 @@ type PGArrayType = `${PGCoreType}[]`;
 
 export type PGType = PGCoreType | PGArrayType;
 
-export function encode<T>(buf: BufferPut, type: PGType, value: T) {
+export function encode<T>(buf: BufferPut, type: PGType | PGCoder<T>, value: T) {
   // Add a UInt32  placeholder for the field length
   buf.word32be(0);
   const lenField = buf.words[buf.words.length - 1] as Word;
@@ -318,15 +223,15 @@ export function encode<T>(buf: BufferPut, type: PGType, value: T) {
 
     // Then, repeated for each field in the tuple, there is a 32-bit length word followed by
     // that many bytes of field data.
-  } else if (types[type] && "value" in lenField) {
+  } else if (type && "value" in lenField) {
     const offset = buf.len;
-    //@ts-ignore
-    types[type].send(buf, value);
+    if (typeof type === "string" && types[type]) {
+      //@ts-ignore
+      types[type].send(buf, value);
+    } else if (typeof type === "object") {
+      type.send(buf, value);
+    }
     lenField.value = buf.len - offset;
   }
   return buf;
 }
-
-// export function decode(buf: MinBuffer, type: PGType) {
-//   return types[type].recv(buf);
-// }

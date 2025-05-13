@@ -1,9 +1,9 @@
-import { jsEncodeRows, TypedRecordEncoder } from "index";
-import { Pool } from "pg";
+import { TypedRecordEncoder } from ".";
+import { PGlite } from "@electric-sql/pglite";
 import { writeFileSync } from "node:fs";
 import { describe, it, expect } from "bun:test";
+const pool = new PGlite();
 
-const pool = new Pool({ database: "postgres" });
 await pool.query(`DROP TABLE IF EXISTS example_table;`);
 const create_table = `
 CREATE TABLE IF NOT EXISTS example_table (
@@ -67,14 +67,13 @@ async function createTable() {
   await pool.query(create_table);
 }
 
-function writeOutput(x: Uint8Array<ArrayBuffer>) {
-  writeFileSync("/tmp/output.bin", x);
-}
+async function writeOutput(x: Uint8Array<ArrayBuffer>) {
+  const blob = new Blob([x]);
 
-async function readOutput() {
-  console.log("Reading data");
   await pool.query(
-    `COPY example_table FROM '/tmp/output.bin' WITH (FORMAT BINARY);`
+    `COPY example_table FROM '/dev/blob' WITH (FORMAT BINARY);`,
+    [],
+    { blob }
   );
 }
 
@@ -105,11 +104,10 @@ describe("Smoke test", () => {
     });
     const input = createInput();
     const output = encoder.encodeRecords(input);
-    writeOutput(output);
-    await readOutput();
+    await writeOutput(output);
     const { rows } = await pool.query(`select * from example_table`);
     for (let i = 0; i < rows.length; i++) {
-      assertRowIsRoughlyEqual(rows[i], input[i]);
+      assertRowIsRoughlyEqual(rows[i] as any, input[i]);
     }
     await endTable();
   });

@@ -1,6 +1,44 @@
 # pg-binary-copy-writer
 
-A module that writes javascript types/objects/arrays to the Postgres binary copy format. Comes with a lot of tools to do so.
+A module that writes javascript types/objects/arrays to the Postgres binary copy format.
+
+## Usage
+
+```typescript
+type InputType = {
+  a: string;
+  b: string;
+  c: number;
+  d: Date;
+  e: object;
+  f: Uint8Array;
+  g?: string | null;
+  h: bigint;
+  i: string;
+  j: boolean[];
+};
+const encoder = new TypedRecordEncoder<InputType>({
+  a: "text",
+  b: "text",
+  c: "float8",
+  d: "timestamptz",
+  e: "jsonb",
+  f: "bytea",
+  g: "text",
+  h: "int8",
+  i: "uuid",
+  j: "bool[]",
+});
+// Will encode an object array and add a header and footer
+const output = encoder.encodeRecords(inputArray);
+// Or, you can stream it like so
+//Get a header and add it to the start of your stream
+const PG_BINARY_HEADER = TypedRecordEncoder.getPGBinaryHeader();
+//Encode records
+encoder.encodeRecord(input);
+//Add the footer then close the stream
+const PG_BINARY_FOOTER = TypedRecordEncoder.getPGBinaryHeader();
+```
 
 ## Why?
 

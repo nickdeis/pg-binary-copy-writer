@@ -1,4 +1,4 @@
-import { utf8Slice, utf8ToBytes, utf8Write } from "utf8";
+import { utf8ToBytes, utf8Write } from "utf8";
 
 export class MinBuffer extends Uint8Array {
   constructor(length: number | Uint8Array | ArrayBuffer) {
@@ -8,45 +8,6 @@ export class MinBuffer extends Uint8Array {
       super(length);
     }
   }
-  // readUInt8(offset: number) {
-  //   offset = offset >>> 0;
-  //   return this[offset]!;
-  // }
-  // readInt16BE(offset: number) {
-  //   offset = offset >>> 0;
-  //   const val = this[offset + 1]! | (this[offset]! << 8);
-  //   return val & 0x8000 ? val | 0xffff0000 : val;
-  // }
-  // readBigInt64BE(offset: number) {
-  //   offset = offset >>> 0;
-  //   const first = this[offset]!;
-  //   const last = this[offset + 7]!;
-
-  //   const val =
-  //     (first << 24) + // Overflow
-  //     this[++offset]! * 2 ** 16 +
-  //     this[++offset]! * 2 ** 8 +
-  //     this[++offset]!;
-
-  //   return (
-  //     (BigInt(val) << BigInt(32)) +
-  //     BigInt(
-  //       this[++offset]! * 2 ** 24 +
-  //         this[++offset]! * 2 ** 16 +
-  //         this[++offset]! * 2 ** 8 +
-  //         last
-  //     )
-  //   );
-  // }
-  // readInt32BE(offset: number) {
-  //   offset = offset >>> 0;
-  //   return (
-  //     (this[offset]! << 24) |
-  //     (this[offset + 1]! << 16) |
-  //     (this[offset + 2]! << 8) |
-  //     this[offset + 3]!
-  //   );
-  // }
   copy(
     target: MinBuffer,
     targetStart?: number,
@@ -93,37 +54,6 @@ export class MinBuffer extends Uint8Array {
     }
     return len;
   }
-  // readUint8(offset: number) {
-  //   offset = offset >>> 0;
-  //   return this[offset]!;
-  // }
-  // readUInt16BE(offset: number) {
-  //   offset = offset >>> 0;
-  //   return (this[offset]! << 8) | this[offset + 1]!;
-  // }
-  // readUInt32BE(offset: number) {
-  //   return (
-  //     this[offset]! * 0x1000000 +
-  //     ((this[offset + 1]! << 16) | (this[offset + 2]! << 8) | this[offset + 3]!)
-  //   );
-  // }
-  // readBigUInt64BE(offset: number) {
-  //   offset = offset >>> 0;
-  //   const first = this[offset]!;
-  //   const last = this[offset + 7]!;
-  //   const hi =
-  //     first * 2 ** 24 +
-  //     this[++offset]! * 2 ** 16 +
-  //     this[++offset]! * 2 ** 8 +
-  //     this[++offset]!;
-
-  //   const lo =
-  //     this[++offset]! * 2 ** 24 +
-  //     this[++offset]! * 2 ** 16 +
-  //     this[++offset]! * 2 ** 8 +
-  //     last;
-  //   return (BigInt(hi) << BigInt(32)) + BigInt(lo);
-  // }
   static fromHex(text: string) {
     if (text.length % 2 !== 0) {
       throw new Error("Hex string must have an even length");
@@ -135,11 +65,6 @@ export class MinBuffer extends Uint8Array {
     }
     return new MinBuffer(byteArray);
   }
-  // toHex() {
-  //   return Array.from(this)
-  //     .map((byte) => byte.toString(16).padStart(2, "0"))
-  //     .join("");
-  // }
   static fromUTF8String(text: string) {
     const length = utf8ToBytes(text).length | 0;
     let buf = new MinBuffer(length);
@@ -159,11 +84,6 @@ export class MinBuffer extends Uint8Array {
     if (length === undefined || length > remaining) length = remaining;
     return utf8Write(this, text, offset, length);
   }
-  // toUTF8String() {
-  //   const length = this.length;
-  //   if (length === 0) return "";
-  //   return utf8Slice(this, 0, length);
-  // }
   static fromDoubleLE(value: number, offset: number) {
     const buf = MinBuffer.alloc(4);
     const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
@@ -176,29 +96,6 @@ export class MinBuffer extends Uint8Array {
     view.setFloat64(offset, value, false);
     return buf;
   }
-  // readDoubleLE(offset: number) {
-  //   if (offset < 0 || offset + 8 > this.length) {
-  //     throw new RangeError("Offset is out of bounds");
-  //   }
-
-  //   // Create a DataView for the underlying buffer
-  //   const view = new DataView(this.buffer, this.byteOffset, this.byteLength);
-
-  //   // Read the double value in little-endian format
-  //   return view.getFloat64(offset, true);
-  // }
-  // readDoubleBE(offset: number) {
-  //   // Ensure the offset is valid
-  //   if (offset < 0 || offset + 8 > this.length) {
-  //     throw new RangeError("Offset is out of bounds");
-  //   }
-
-  //   // Create a DataView for the underlying buffer
-  //   const view = new DataView(this.buffer, this.byteOffset, this.byteLength);
-
-  //   // Read the double value in big-endian format
-  //   return view.getFloat64(offset, false);
-  // }
   static alloc(size: number) {
     return new MinBuffer(size);
   }
